@@ -1,0 +1,466 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javaaji Tharun Kumar - Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #2d2d2d;
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+        }
+
+        nav ul li a {
+            color: #ffffff;
+            text-decoration: none;
+            font-family: 'Lora', serif;
+            font-size: 1rem;
+            font-weight: 400;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: #d4a017;
+            transition: width 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #d4a017;
+        }
+
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-content h1 {
+            font-family: 'Lora', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            color: #666666;
+            margin-bottom: 20px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero .contact-info {
+            font-size: 1.1rem;
+            color: #666666;
+            margin-bottom: 20px;
+        }
+
+        .hero .contact-info a {
+            color: #d4a017;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .hero .contact-info a:hover {
+            color: #333333;
+        }
+
+        .hero .btn {
+            background: #d4a017;
+            color: #ffffff;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .hero .btn:hover {
+            background: #b88b14;
+            transform: translateY(-2px);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: #666666;
+            font-size: 1.8rem;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #d4a017;
+            transform: scale(1.1);
+        }
+
+        /* Section Styling */
+        section {
+            padding: 80px 0;
+            background: #ffffff;
+        }
+
+        section:nth-child(even) {
+            background: #f8f8f8;
+        }
+
+        h2 {
+            font-family: 'Lora', serif;
+            font-size: 2.8rem;
+            color: #d4a017;
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #d4a017, #b88b14);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Card Styling */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            font-family: 'Lora', serif;
+            font-size: 1.6rem;
+            color: #d4a017;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: #666666;
+        }
+
+        /* Footer */
+        footer {
+            background: #2d2d2d;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 60px;
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        .animate {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+
+            .hero-content p, .hero .contact-info {
+                font-size: 1.1rem;
+            }
+
+            nav ul {
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#certifications">Certifications</a></li>
+                <li><a href="#achievements">Achievements</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Javaaji Tharun Kumar</h1>
+            <p>Computer Science student specializing in Python, Java, machine learning, and UI/UX design, delivering innovative solutions.</p>
+            <div class="contact-info">
+                <a href="tel:+917416174236">+91 7416174236</a> | 
+                <a href="mailto:tharunjs2006@gmail.com">tharunjs2006@gmail.com</a>
+            </div>
+            <a href="#projects" class="btn">View My Portfolio</a>
+            <div class="social-links">
+                <a href="https://leetcode.com/u/j_tharun_2468/" target="_blank">LeetCode</a>
+                <a href="https://www.linkedin.com/in/javaaji-tharun-kumar-48a919261/" target="_blank">LinkedIn</a>
+                <a href="https://github.com/tharun-123-pixel" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="animate">
+        <div class="container">
+            <h2>About</h2>
+            <p>Javaaji Tharun Kumar is a B.Tech student in Computer Science (2022-2026) at Anurag University, Hyderabad, with a CGPA of 8.47/10. Specializing in Python, Java, machine learning, and UI/UX design, he is committed to delivering innovative solutions in technology-driven environments.</p>
+        </div>
+    </section>
+
+    <section id="skills" class="animate">
+        <div class="container">
+            <h2>Technical Expertise</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Programming Languages</h3>
+                    <p>Proficient in Java, Python, MySQL, HTML, CSS, and JavaScript for robust application development.</p>
+                </div>
+                <div class="card">
+                    <h3>Machine Learning</h3>
+                    <p>Skilled in scikit-learn, NumPy, pandas, cross-validation, and feature engineering for data-driven solutions.</p>
+                </div>
+                <div class="card">
+                    <h3>UI/UX Design</h3>
+                    <p>Experienced in Figma, Sketch, and Creatic, creating intuitive wireframes and user-centric interfaces.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="animate">
+        <div class="container">
+            <h2>Projects</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Resume Screening System</h3>
+                    <p>Developed an ML-based system using Spacy, TFIDF, SVM, and Random Forest to analyze resumes and suggest resources.</p>
+                </div>
+                <div class="card">
+                    <h3>Hand Gesture Recognition</h3>
+                    <p>Built a real-time gesture control system using OpenCV and MediaPipe for interactive applications.</p>
+                </div>
+                <div class="card">
+                    <h3>Fake vs Real News Detection</h3>
+                    <p>Created a classification model using TfidfVectorizer and Logistic Regression to distinguish news authenticity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="certifications" class="animate">
+        <div class="container">
+            <h2>Certifications</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Java Programming</h3>
+                    <p>Infosys Springboard</p>
+                </div>
+                <div class="card">
+                    <h3>Python Programming</h3>
+                    <p>Cisco NetAcad</p>
+                </div>
+                <div class="card">
+                    <h3>CCNA: Introduction to Networks</h3>
+                    <p>Cisco NetAcad</p>
+                </div>
+                <div class="card">
+                    <h3>Data Analytics Job Simulation</h3>
+                    <p>Deloitte (Forage)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="achievements" class="animate">
+        <div class="container">
+            <h2>Achievements</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Code Beat Hackathon</h3>
+                    <p>Finalist at Tecxaccelerate, developed an ML-based Resume Screening System using Flask.</p>
+                </div>
+                <div class="card">
+                    <h3>LeetCode</h3>
+                    <p>Solved 300+ problems, specializing in Data Structures and Algorithms.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Javaaji Tharun Kumar. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Scroll Animation
+        const animateElements = document.querySelectorAll('.animate');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        animateElements.forEach(element => observer.observe(element));
+    </script>
+</body>
+</html>
